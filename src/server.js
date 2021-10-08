@@ -15,8 +15,15 @@ mongoose.connect(`${process.env.DB_URI}`).then(() => {
 });
 
 // Use
-app.use(cors());
+
 app.use(express.json());
+// app.use((req, res, next) => {
+//   res.setHeader("Access-Control-Allow-Origin", "*"),
+//     res.setHeader("Access-Control-Allow-Headers", "*"),
+//     next();
+// });
+app.use(cors());
+
 app.use("/api", authRoutes);
 
 // async function main() {

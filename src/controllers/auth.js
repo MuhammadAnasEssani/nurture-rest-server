@@ -5,46 +5,45 @@ const shortid = require("shortid");
 const nodemailer = require("nodemailer");
 
 exports.signup = async (req, res) => {
-  console.log("hello")
-  // User.findOne({ email: req.body.email }).exec(async (error, user) => {
-  //   if (user)
-  //     return res.status(400).json({
-  //       error: "User already registered",
-  //     });
-  //   const { firstName, lastName, email, password, cpassword } = req.body;
-  //   if (password != cpassword)
-  //     return res.status(400).json({
-  //       error: "password and confirm password not matched",
-  //     });
-  //   const token = jwt.sign(
-  //     { firstName, lastName, email, password },
-  //     process.env.JWT_SECRET,
-  //     { expiresIn: "1d" }
-  //   );
-  //   const transporter = nodemailer.createTransport({
-  //     service: "gmail",
-  //     auth: {
-  //       user: "anas4302537@cloud.neduet.edu.pk",
-  //       pass: `${process.env.pass}`, // generated ethereal password
-  //     },
-  //   });
-  //   const info = await transporter
-  //     .sendMail({
-  //       from: "anas4302537@cloud.neduet.edu.pk",
-  //       to: email,
-  //       subject: "Hello ✔",
-  //       html: `
-  //               <h2>Please Click On The Given Link To Activate Your Account</h2>
-  //               <p>${process.env.CLIENT_URI}/authentication/activate/${token}</p>
-  //           `,
-  //     })
-  //     .then(() => {
-  //       return res.status(201).json({
-  //         message: "Plz verify your Account on your email",
-  //       });
-  //     });
-
-  // });
+  console.log("hello");
+  User.findOne({ email: req.body.email }).exec(async (error, user) => {
+    if (user)
+      return res.status(400).json({
+        error: "User already registered",
+      });
+    const { firstName, lastName, email, password, cpassword } = req.body;
+    if (password != cpassword)
+      return res.status(400).json({
+        error: "password and confirm password not matched",
+      });
+    const token = jwt.sign(
+      { firstName, lastName, email, password },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "anas4302537@cloud.neduet.edu.pk",
+        pass: `${process.env.pass}`, // generated ethereal password
+      },
+    });
+    const info = await transporter
+      .sendMail({
+        from: "anas4302537@cloud.neduet.edu.pk",
+        to: email,
+        subject: "Hello ✔",
+        html: `
+                <h2>Please Click On The Given Link To Activate Your Account</h2>
+                <p>${process.env.CLIENT_URI}/authentication/activate/${token}</p>
+            `,
+      })
+      .then(() => {
+        return res.status(201).json({
+          message: "Plz verify your Account on your email",
+        });
+      });
+  });
 };
 
 // exports.signin = (req, res) => {
