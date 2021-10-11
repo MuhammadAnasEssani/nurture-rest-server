@@ -2,11 +2,15 @@ const express = require("express");
 const env = require("dotenv");
 const mongoose = require("mongoose");
 const cors = require("cors");
-
+const path = require('path');
 const app = express();
 
 // Routes
 const authRoutes = require("./routes/auth.js");
+const vendorAuthRoutes = require("./routes/vendor/auth.js");
+const adminAddStaffRoutes = require("./routes/admin/staff.admin.js");
+const adminVendorRoutes = require("./routes/admin/vendor.admin.js");
+const categoryRoutes = require("./routes/category.js")
 
 env.config();
 
@@ -17,35 +21,13 @@ mongoose.connect(`${process.env.DB_URI}`).then(() => {
 // Use
 
 app.use(express.json());
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", "*"),
-//     res.setHeader("Access-Control-Allow-Headers", "*"),
-//     next();
-// });
 app.use(cors());
-
+app.use('/public', express.static(path.join(__dirname, 'uploads')))
 app.use("/api", authRoutes);
-
-// async function main() {
-//   const transporter = nodemailer.createTransport({
-//     service: "gmail",
-//     auth: {
-//       user: "anas4302537@cloud.neduet.edu.pk",
-//       pass: `${process.env.pass}`, // generated ethereal password
-//     },
-//   });
-
-//   // send mail with defined transport object
-//   const info = await transporter.sendMail({
-//     from: "anas4302537@cloud.neduet.edu.pk",
-//     to: "anasqadir782@gmail.com", // list of receivers
-//     subject: "Hello ✔", // Subject line
-//     //   text: "Hello world?", // plain text body
-//     html: "<b>Abc Junior?</b>", // html body
-//   });
-// }
-
-// main().catch(console.error);
+app.use("/api", vendorAuthRoutes)
+app.use("/api", adminAddStaffRoutes)
+app.use("/api", adminVendorRoutes)
+app.use("/api", categoryRoutes)
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);

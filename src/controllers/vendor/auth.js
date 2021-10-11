@@ -1,4 +1,4 @@
-const User = require("../models/user.js");
+const User = require("../../models/user.js");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const shortid = require("shortid");
@@ -8,7 +8,7 @@ exports.signup = async (req, res) => {
   User.findOne({ email: req.body.email }).exec(async (error, user) => {
     if (user)
       return res.status(422).json({
-        error: "User already registered",
+        error: "Account is already registered",
       });
     const { firstName, lastName, email, password, cpassword } = req.body;
     if (password != cpassword)
@@ -34,7 +34,7 @@ exports.signup = async (req, res) => {
         subject: "Hello ✔",
         html: `
                 <h2>Please Click On The Given Link To Activate Your Account</h2>
-                <a href=${process.env.CLIENT_URI}/authentication/activate/${token}>activate</a>
+                <a href=${process.env.CLIENT_URI}/vendor-authentication/activate/${token}>activate</a>
             `,
       })
       .then(() => {
@@ -49,9 +49,10 @@ exports.signin = (req, res) => {
     User.findOne({ email: req.body.email })
     .exec(async (error, user) => {
         if(error) return res.status(400).json({ error });
-        if(user && user.role === "user"){
+        if(user){
+          if(user.status != "pending"){
             const isPassword = await user.authenticate(req.body.password)
-            if(isPassword && user.role === 'user'){
+            if(isPassword){
                 const token = jwt.sign({_id: user._id, role: user.role}, process.env.JWT_SECRET, { expiresIn: '1d'})
                 const { _id, firstName, lastName, email, role, fullName } = user;
                 res.status(200).json({
@@ -63,9 +64,13 @@ exports.signin = (req, res) => {
                     error: 'Authentication Faild'
                 })
             }
-
+          }else {
+            return res.status(201).json({
+              message: "plz wait your authorization in progress"
+            })
+          }
         }else{
-            return res.status(400).json({error: 'User is not Registered'});
+            return res.status(400).json({error: 'Account is Not registered is not Registered'});
         }
     });
 };
@@ -85,7 +90,8 @@ exports.activateAccount = async (req, res) => {
         email,
         hash_password,
         username: shortid.generate(),
-        status: 'verified'
+        role: 'vendor',
+        status: 'pending'
       });
       _user.save((error, user) => {
         if (error) {
@@ -94,10 +100,10 @@ exports.activateAccount = async (req, res) => {
           });
         }
         if (user) {
-          const { _id, firstName, lastName, email, role, fullName } = user;
+          const { _id, firstName, lastName, email, role, fullName, status } = user;
           return res.status(201).json({
             token,
-            user: { _id, firstName, lastName, email, role, fullName },
+            user: { _id, firstName, lastName, email, role, fullName, status },
           });
         }
       });

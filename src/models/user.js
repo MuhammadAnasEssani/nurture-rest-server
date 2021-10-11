@@ -37,8 +37,13 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['user', 'admin'],
+        enum: ['user', 'admin', 'staff', 'vendor' ],
         default: 'user'
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'verified'],
+        default: 'requested'
     },
     contactNumber: { type: String },
     profilePicture: { type: String }

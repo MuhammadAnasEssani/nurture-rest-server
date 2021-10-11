@@ -4,7 +4,7 @@ const { validateSignupRequest, isRequestValidated } = require('../validators/aut
 // const { validateSignupRequest, isRequestValidated, validateSigninRequest } = require('../validators/auth');
 const router = express.Router();
 
-// router.post('/signin',validateSigninRequest ,isRequestValidated ,signin );
+router.post('/signin', signin );
 
 router.post('/signup',validateSignupRequest ,isRequestValidated ,signup);
 router.post("/email-activate", activateAccount)
