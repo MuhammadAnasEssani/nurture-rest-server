@@ -61,73 +61,54 @@ exports.getCategories = (req, res) => {
         });
 }
 
-// exports.updateCategories = async (req, res) => {
-//     const { _id, name, parentId, type } = req.body;
-//     const updatedCategories = [];
-//     if (name instanceof Array) {
-//         for (let i = 0; i < name.length; i++) {
-//             const category = {
-//                 name: name[i],
-//                 type: type[i],
-//             };
-//             if (parentId[i] !== "") {
-//                 category.parentId = parentId[i];
-//             }
+exports.updateCategories = async (req, res) => {
+    const { _id, name, parentId, type } = req.body;
+    const updatedCategories = [];
+    if (name instanceof Array) {
+        for (let i = 0; i < name.length; i++) {
+            const category = {
+                name: name[i],
+                type: type[i],
+                slug: `${slugify(name[i])}-${shortid.generate()}`
+            };
+            if (parentId[i] !== "") {
+                category.parentId = parentId[i];
+            }
 
-//             const updatedCategory = await Category.findOneAndUpdate(
-//                 { _id: _id[i] },
-//                 category,
-//                 { new: true }
-//             );
-//             updatedCategories.push(updatedCategory);
-//         }
-//         return res.status(201).json({ updateCategories: updatedCategories });
-//     } else {
-//         const category = {
-//             name,
-//             type,
-//         };
-//         if (parentId !== "") {
-//             category.parentId = parentId;
-//         }
-//         const updatedCategory = await Category.findOneAndUpdate({ _id }, category, {
-//             new: true,
-//         });
-//         return res.status(201).json({ updatedCategory });
-//     }
-// };
+            const updatedCategory = await Category.findOneAndUpdate(
+                { _id: _id[i] },
+                category,
+                { new: true }
+            );
+            updatedCategories.push(updatedCategory);
+        }
+        return res.status(201).json({ updateCategories: updatedCategories });
+    } else {
+        const category = {
+            name,
+            type,
+            slug: `${slugify(name)}-${shortid.generate()}`
+        };
+        if (parentId !== "") {
+            category.parentId = parentId;
+        }
+        const updatedCategory = await Category.findOneAndUpdate({ _id }, category, {
+            new: true,
+        });
+        return res.status(201).json({ updatedCategory });
+    }
+};
 
-// export const deleteCategories = (ids) => {
-//     return async dispatch => {
-//         dispatch({ type: categoryConstansts.DELETE_CATEGORIES_REQUEST });
-//         const res = await axios.post(`/category/delete`, {
-//             payload: {
-//                 ids
-//             }
-//         });
-//         if (res.status == 201) {
-//             dispatch(getAllCategory());
-//             dispatch({ type: categoryConstansts.DELETE_CATEGORIES_SUCCESS });
-//         } else {
-//             const { error } = res.data;
-//             dispatch({
-//                 type: categoryConstansts.DELETE_CATEGORIES_FAILURE,
-//                 payload: { error }
-//             });
-//         }
-//     }
-// }
-
-// exports.deleteCategories = async (req, res) => {
-//     const { ids } = req.body.payload;
-//     const deletedCategories = [];
-//     for(let i = 0; i < ids.length; i++){
-//         const deletecategory = await Category.findOneAndDelete({ _id: ids[i]._id});
-//         deletedCategories.push(deletecategory);
-//     }
-//     if(deletedCategories.length === ids.length){
-//         res.status(201).json({message: 'Categories removed'})
-//     }else{
-//         res.status(400).json({message: 'Something went wrong'})
-//     }
-// }
+exports.deleteCategories = async (req, res) => {
+    const { ids } = req.body.payload;
+    const deletedCategories = [];
+    for(let i = 0; i < ids.length; i++){
+        const deletecategory = await Category.findOneAndDelete({ _id: ids[i]._id});
+        deletedCategories.push(deletecategory);
+    }
+    if(deletedCategories.length === ids.length){
+        res.status(201).json({message: 'Categories removed'})
+    }else{
+        res.status(400).json({message: 'Something went wrong'})
+    }
+}

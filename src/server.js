@@ -10,7 +10,8 @@ const authRoutes = require("./routes/auth.js");
 const vendorAuthRoutes = require("./routes/vendor/auth.js");
 const adminAddStaffRoutes = require("./routes/admin/staff.admin.js");
 const adminVendorRoutes = require("./routes/admin/vendor.admin.js");
-const categoryRoutes = require("./routes/category.js")
+const categoryRoutes = require("./routes/category.js");
+const productRoutes = require("./routes/product.js")
 
 env.config();
 
@@ -28,6 +29,7 @@ app.use("/api", vendorAuthRoutes)
 app.use("/api", adminAddStaffRoutes)
 app.use("/api", adminVendorRoutes)
 app.use("/api", categoryRoutes)
+app.use("/api", productRoutes)
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
