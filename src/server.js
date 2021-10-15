@@ -11,8 +11,13 @@ const vendorAuthRoutes = require("./routes/vendor/auth.js");
 const adminAddStaffRoutes = require("./routes/admin/staff.admin.js");
 const adminVendorRoutes = require("./routes/admin/vendor.admin.js");
 const categoryRoutes = require("./routes/category.js");
-const productRoutes = require("./routes/product.js")
-
+const productRoutes = require("./routes/product.js");
+const cartRoutes = require("./routes/cart.js");
+const addressRoutes = require("./routes/address.js");
+const orderRoutes = require("./routes/order.js");
+const adminOrderRoutes = require("./routes/admin/order.admin.js");
+const vendorOrderRoutes = require("./routes/vendor/order.vendor.js")
+ 
 env.config();
 
 mongoose.connect(`${process.env.DB_URI}`).then(() => {
@@ -30,6 +35,11 @@ app.use("/api", adminAddStaffRoutes)
 app.use("/api", adminVendorRoutes)
 app.use("/api", categoryRoutes)
 app.use("/api", productRoutes)
+app.use("/api", cartRoutes)
+app.use("/api", addressRoutes)
+app.use("/api", orderRoutes)
+app.use("/api", adminOrderRoutes)
+app.use("/api", vendorOrderRoutes)
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);

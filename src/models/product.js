@@ -30,11 +30,21 @@ const productSchema = new mongoose.Schema({
     ],
     reviews: [
         {
-            userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
-            reviewL: String,
-            reply: String           
-        }
-    ],
+          user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+          },
+          email: {
+            type: String,
+          },
+          rating: {
+            type: Number,
+          },
+          comment: {
+            type: String,
+          },
+        },
+      ],
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
     createdByRole: {type: String, required: true},
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },

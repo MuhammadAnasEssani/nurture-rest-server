@@ -18,7 +18,7 @@ exports.signup = async (req, res) => {
     const token = jwt.sign(
       { firstName, lastName, email, password },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "20m" }
     );
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -52,7 +52,7 @@ exports.signin = (req, res) => {
         if(user && user.role === "user"){
             const isPassword = await user.authenticate(req.body.password)
             if(isPassword && user.role === 'user'){
-                const token = jwt.sign({_id: user._id, role: user.role}, process.env.JWT_SECRET, { expiresIn: '1d'})
+                const token = jwt.sign({_id: user._id, role: user.role, email: user.email}, process.env.JWT_SECRET, { expiresIn: '1d'})
                 const { _id, firstName, lastName, email, role, fullName } = user;
                 res.status(200).json({
                     token,
@@ -106,3 +106,66 @@ exports.activateAccount = async (req, res) => {
     return res.status(500).json({ error: "Something went Wrong" });
   }
 };
+
+exports.forgotPassword = async (req, res) => {
+  const {email} = req.body;
+  User.findOne({email}, (err, user) => {
+    if(!user) {
+      return res.status(400).json({error: "User with this email doesnot exist"})
+    }
+
+    const token = jwt.sign({_id: user._id}, process.env.RESET_PASSWORD_KEY, { expiresIn: '20m'})
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "anas4302537@cloud.neduet.edu.pk",
+        pass: `${process.env.pass}`, // generated ethereal password
+      },
+    });
+    
+    return user.updateOne({resetLink: token},async function(err, sucess){
+      if(err) {
+        return res.status(400).json({error: "reset password link error"})
+      } else {
+        const info = await transporter
+      .sendMail({
+        from: "anas4302537@cloud.neduet.edu.pk",
+        to: email,
+        subject: "Account Activation Link",
+        html: `
+                <h2>Please Click On The Given Link To Reset Your Password</h2>
+                <a href=${process.env.CLIENT_URI}/resetpassword/${token}>activate</a>
+            `,
+      })
+      .then(() => {
+        return res.status(201).json({
+          message: "Plz verify your Account on your email",
+        });
+      });
+      }
+    })
+  }
+  )
+}
+
+exports.resetPassword = (req, res) => {
+  const {resetLink, newPass} = req.body;
+  if(resetLink) {
+    jwt.verify(resetLink, process.env.RESET_PASSWORD_KEY,async function(error, decodedData) {
+      if(error) {
+        return res.status(401).json({
+          error: "Incorrect Token Or It Is Expired"
+        })
+      }
+      const password = await bcrypt.hash(newPass, 10);
+      update = {
+        $set: {
+          "hash_password": password,
+        },
+      };
+      User.findOneAndUpdate({resetLink}, update,{new: true}).then((result) => {
+        return res.status(201).json({result})
+      }).catch((err) => console.log(err))
+    })
+  }
+}

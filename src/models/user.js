@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    resetLink: {
+        data: String,
+        default: ""
+    },
     role: {
         type: String,
         enum: ['user', 'admin', 'staff', 'vendor' ],

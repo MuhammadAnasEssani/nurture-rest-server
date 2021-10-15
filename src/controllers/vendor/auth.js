@@ -34,7 +34,7 @@ exports.signup = async (req, res) => {
         subject: "Hello ✔",
         html: `
                 <h2>Please Click On The Given Link To Activate Your Account</h2>
-                <a href=${process.env.CLIENT_URI}/vendor-authentication/activate/${token}>activate</a>
+                <a href=${process.env.CLIENT_URI}/authentication/activate/${token}>activate</a>
             `,
       })
       .then(() => {
