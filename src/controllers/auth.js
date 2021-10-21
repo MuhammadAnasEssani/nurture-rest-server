@@ -87,6 +87,7 @@ exports.activateAccount = async (req, res) => {
         username: shortid.generate(),
         status: 'verified'
       });
+      console.log(_user)
       _user.save((error, user) => {
         if (error) {
           return res.status(400).json({
