@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const shortid = require('shortid');
-const { upload, requireSignin, adminStaffAndVendorMiddleware, vendorMiddleware, userMiddleware, adminMiddleware } = require('../common-middleware');
+const { requireSignin, adminStaffAndVendorMiddleware, vendorMiddleware, userMiddleware, adminMiddleware } = require('../common-middleware');
 const { createProduct, getProducts, getProduct, getProductsByVendor, getProductDetailsById, deleteProductById, updateProduct, addReviews, removeProductReviews } = require('../controllers/product');
+const upload = require("../utils/multer.js")
 
 router.post('/product/create', requireSignin, adminStaffAndVendorMiddleware, upload.array('productPicture'), createProduct)
 router.get('/product/getproduct', getProduct);

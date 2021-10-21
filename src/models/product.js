@@ -26,7 +26,10 @@ const productSchema = new mongoose.Schema({
     },
     offer: { type: Number },
     productPictures: [
-        { img: { type: String }}
+        {
+          avatar: {type: String},
+          cloudinary_id: {type: String}
+        },
     ],
     reviews: [
         {

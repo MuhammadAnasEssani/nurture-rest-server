@@ -2,35 +2,44 @@ const Product = require("../models/product");
 const shortid = require("shortid");
 const slugify = require("slugify");
 const Category = require("../models/category");
+const cloudinary = require("../utils/cloudinary.js");
 
-exports.createProduct = (req, res) => {
-  // res.status(200).json({ file: req.files, body: req.body })
+exports.createProduct = async (req, res) => {
   const { name, price, quantity, description, category } = req.body;
 
   let productPictures = [];
   if (req.files.length > 0) {
-    productPictures = req.files.map((file) => {
-      return { img: file.filename };
+    req.files.map(async (file) => {
+      const result = await cloudinary.uploader.upload(file.path);
+      if(result) {
+        productPictures.push( {
+          avatar: result.secure_url,
+          cloudinary_id: result.public_id,
+        })
+        if(productPictures.length === req.files.length) {
+          const product = new Product({
+            name: name,
+            slug: slugify(name),
+            price,
+            quantity,
+            description,
+            productPictures,
+            category,
+            createdByRole: req.user.role,
+            createdBy: req.user._id,
+          });
+          product.save((error, product) => {
+            if (error) return res.status(400).json({ error });
+            if (product) {
+              res.status(201).json({ product });
+            }
+          });
+        }
+      }
     });
+  } else {
+    res.status(200).json({error: "No file Uploaded"})
   }
-
-  const product = new Product({
-    name: name,
-    slug: slugify(name),
-    price,
-    quantity,
-    description,
-    productPictures,
-    category,
-    createdByRole: req.user.role,
-    createdBy: req.user._id,
-  });
-  product.save((error, product) => {
-    if (error) return res.status(400).json({ error });
-    if (product) {
-      res.status(201).json({ product });
-    }
-  });
 };
 
 exports.getProduct = (req, res) => {
@@ -41,6 +50,30 @@ exports.getProduct = (req, res) => {
       res.status(200).json({ products });
     }
   });
+};
+exports.getProductsBySlug = (req, res) => {
+  const { slug } = req.params;
+  Category.findOne({ slug: slug })
+      .select("_id type")
+      .exec((error, category) => {
+          if (error) {
+              return res.status(400).json({ error });
+          }
+
+          if (category) {
+              Product.find({ category: category._id })
+                  .exec((error, products) => {
+                      if (error) {
+                          return res.status(400).json({ error });
+                      }
+                      if(products){
+                        res.status(200).json({ products });
+                      }else {
+                        res.status(400).json({ messsage: "No such product Exist" });
+                      }
+                  });
+          }
+      });
 };
 
 exports.getProductDetailsById = (req, res) => {
@@ -59,9 +92,17 @@ exports.getProductDetailsById = (req, res) => {
   }
 };
 
-exports.deleteProductById = (req, res) => {
+exports.deleteProductById = async(req, res) => {
   const { productId } = req.body.payload;
   if (productId) {
+    const product = await Product.findById({_id: productId});
+    if (!product) {
+      return res.json(400)({error: "Product Not Found"});
+    }
+    // console.log(product)
+    product.productPictures.map(async(data) => {
+      await cloudinary.uploader.destroy(data.cloudinary_id);
+    })
     Product.deleteOne({ _id: productId }).exec((error, result) => {
       if (error) return res.status(400).json({ error });
       if (result) {
@@ -170,10 +211,10 @@ exports.addReviews = (req, res) => {
         };
       }
       Product.findOneAndUpdate(condition, update, { upsert: true })
-          .then((result) => {
-            return res.status(201).json({ update });
-          })
-          .catch((err) => console.log("error in add reviews"));
+        .then((result) => {
+          return res.status(201).json({ update });
+        })
+        .catch((err) => console.log("error in add reviews"));
     } else {
       return res.status(400).json({ message: "No Product Found" });
     }
@@ -181,22 +222,22 @@ exports.addReviews = (req, res) => {
 };
 
 exports.removeProductReviews = (req, res) => {
-    const { userId, _id } = req.body.payload;
-    if (userId) {
-        Product.findOneAndUpdate(
-            { _id },
-            {
-                $pull: {
-                    reviews: {
-                        user: userId,
-                    },
-                },
-            }
-        ).exec((error, result) => {
-            if (error) return res.status(400).json({ error });
-            if (result) {
-                res.status(202).json({ result });
-            }
-        });
-    }
+  const { userId, _id } = req.body.payload;
+  if (userId) {
+    Product.findOneAndUpdate(
+      { _id },
+      {
+        $pull: {
+          reviews: {
+            user: userId,
+          },
+        },
+      }
+    ).exec((error, result) => {
+      if (error) return res.status(400).json({ error });
+      if (result) {
+        res.status(202).json({ result });
+      }
+    });
+  }
 };
