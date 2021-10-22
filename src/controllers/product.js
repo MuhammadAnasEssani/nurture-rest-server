@@ -101,12 +101,12 @@ exports.deleteProductById = async(req, res) => {
     }
     // console.log(product)
     product.productPictures.map(async(data) => {
-      await cloudinary.uploader.destroy(data.cloudinary_id);
+      result = await cloudinary.uploader.destroy(data.cloudinary_id);
     })
-    Product.deleteOne({ _id: productId }).exec((error, result) => {
+    Product.deleteOne({ _id: productId }).exec((error, data) => {
       if (error) return res.status(400).json({ error });
-      if (result) {
-        res.status(202).json({ result });
+      if (data) {
+        res.status(202).json({ data });
       } else {
         res.status(202).json({ message: "No such Procuct Exist" });
       }
