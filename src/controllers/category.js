@@ -52,7 +52,7 @@ exports.addCategory = (req, res) => {
 exports.getCategories = (req, res) => {
     Category.find({})
         .exec((error, categories) => {
-            if (error) return res.status(400).json({ error })
+            if (error) return res.status(400).json({ message: "Error in Fetching Categories" })
 
             if (categories) {
                 const categoryList = createCategories(categories)

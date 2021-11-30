@@ -29,7 +29,7 @@ exports.createProduct = async (req, res) => {
             createdBy: req.user._id,
           });
           product.save((error, product) => {
-            if (error) return res.status(400).json({ error });
+            if (error) return res.status(400).json({ message: "Something Went Wrong" });
             if (product) {
               res.status(201).json({ product });
             }
@@ -38,7 +38,7 @@ exports.createProduct = async (req, res) => {
       }
     });
   } else {
-    res.status(200).json({error: "No file Uploaded"})
+    res.status(400).json({error: "No file Uploaded"})
   }
 };
 
