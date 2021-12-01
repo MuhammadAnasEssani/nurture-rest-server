@@ -32,19 +32,19 @@ exports.addCategory = (req, res) => {
         slug: `${slugify(req.body.name)}-${shortid.generate()}`
     }
 
-    if (req.file) {
-        categoryObj.categoryImage = req.file.filename;
-    }
+    // if (req.file) {
+    //     categoryObj.categoryImage = req.file.filename;
+    // }
 
-    if (req.body.parentId) {
+    if (req.body.parentId != undefined) {
         categoryObj.parentId = req.body.parentId
     }
 
     const cat = new Category(categoryObj);
     cat.save((error, category) => {
-        if (error) return res.status(400).json({ error })
+        if (error) return res.status(400).json({ message: "Somthing went Wrong in Adding Category" })
         if (category) {
-            return res.status(201).json({ category });
+            return res.status(201).json({ message: "Category Added" });
         };
     });
 };
