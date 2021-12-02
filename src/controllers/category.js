@@ -18,8 +18,6 @@ function createCategories(categories, parentId = null) {
             name: cate.name,
             slug: cate.slug,
             parentId: cate.parentId,
-            type: cate.type,
-            categoryImage: cate.categoryImage,
             children: createCategories(categories, cate._id)
         });
     }
@@ -38,6 +36,7 @@ exports.addCategory = (req, res) => {
 
     if (req.body.parentId != undefined) {
         categoryObj.parentId = req.body.parentId
+        Category.findOne({_id: req.body.parentId})
     }
 
     const cat = new Category(categoryObj);

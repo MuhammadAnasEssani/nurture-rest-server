@@ -11,12 +11,12 @@ exports.createProduct = async (req, res) => {
   if (req.files.length > 0) {
     req.files.map(async (file) => {
       const result = await cloudinary.uploader.upload(file.path);
-      if(result) {
-        productPictures.push( {
+      if (result) {
+        productPictures.push({
           avatar: result.secure_url,
           cloudinary_id: result.public_id,
-        })
-        if(productPictures.length === req.files.length) {
+        });
+        if (productPictures.length === req.files.length) {
           const product = new Product({
             name: name,
             slug: slugify(name),
@@ -29,7 +29,8 @@ exports.createProduct = async (req, res) => {
             createdBy: req.user._id,
           });
           product.save((error, product) => {
-            if (error) return res.status(400).json({ message: "Something Went Wrong" });
+            if (error)
+              return res.status(400).json({ message: "Something Went Wrong" });
             if (product) {
               res.status(201).json({ product });
             }
@@ -38,7 +39,7 @@ exports.createProduct = async (req, res) => {
       }
     });
   } else {
-    res.status(400).json({error: "No file Uploaded"})
+    res.status(400).json({ error: "No file Uploaded" });
   }
 };
 
@@ -54,26 +55,25 @@ exports.getProduct = (req, res) => {
 exports.getProductsBySlug = (req, res) => {
   const { slug } = req.params;
   Category.findOne({ slug: slug })
-      .select("_id type")
-      .exec((error, category) => {
-          if (error) {
-              return res.status(400).json({ error });
-          }
+    .select("_id type")
+    .exec((error, category) => {
+      if (error) {
+        return res.status(400).json({ error });
+      }
 
-          if (category) {
-              Product.find({ category: category._id })
-                  .exec((error, products) => {
-                      if (error) {
-                          return res.status(400).json({ error });
-                      }
-                      if(products){
-                        res.status(200).json({ products });
-                      }else {
-                        res.status(400).json({ messsage: "No such product Exist" });
-                      }
-                  });
+      if (category) {
+        Product.find({ category: category._id }).exec((error, products) => {
+          if (error) {
+            return res.status(400).json({ error });
           }
-      });
+          if (products) {
+            res.status(200).json({ products });
+          } else {
+            res.status(400).json({ messsage: "No such product Exist" });
+          }
+        });
+      }
+    });
 };
 
 exports.getProductDetailsById = (req, res) => {
@@ -92,27 +92,27 @@ exports.getProductDetailsById = (req, res) => {
   }
 };
 
-exports.deleteProductById = async(req, res) => {
+exports.deleteProductById = async (req, res) => {
   const { productId } = req.body.payload;
   if (productId) {
-    const product = await Product.findById({_id: productId});
+    const product = await Product.findById({ _id: productId });
     if (!product) {
-      return res.json(400)({error: "Product Not Found"});
+      return res.json(400)({ error: "Product Not Found" });
     }
-    // console.log(product)
-    product.productPictures.map(async(data) => {
-      result = await cloudinary.uploader.destroy(data.cloudinary_id);
-    })
+    product.productPictures.map(async (data) => {
+      const result = await cloudinary.uploader.destroy(data.cloudinary_id);
+      // console.log(result);
+    });
     Product.deleteOne({ _id: productId }).exec((error, data) => {
-      if (error) return res.status(400).json({ error });
+      if (error) return res.status(400).json({ message: "Something Went Wrong" });
       if (data) {
-        res.status(202).json({ data });
+        res.status(202).json({ message: "Product Deleted Sucessfully" });
       } else {
-        res.status(202).json({ message: "No such Procuct Exist" });
+        res.status(400).json({ message: "No such Procuct Exist" });
       }
     });
   } else {
-    res.status(400).json({ error: "Product Id required" });
+    res.status(400).json({ message: "Product Id required" });
   }
 };
 
@@ -143,42 +143,71 @@ exports.getProductsByVendor = async (req, res) => {
 };
 
 exports.updateProduct = async (req, res) => {
-  const { _id, name, price, quantity, description, offer, category } = req.body;
+  const { _id, name, price, quantity, description, category } = req.body;
   let productPictures = [];
-  if (req.files) {
-    if (req.files.length > 0) {
-      productPictures = req.files.map((file) => {
-        return { img: file.filename };
-      });
-    }
-  }
-  const product = {
-    name,
-    slug: slugify(name),
-    price,
-    quantity,
-    description,
-    offer,
-    category,
-    updatedBy: req.user._id,
-    updatedByRole: req.user.role,
-  };
-  console.log(productPictures);
-  if (productPictures.length > 0) {
-    product.productPictures = productPictures;
-  }
-  console.log(product);
-  const updatedProduct = await Product.findOneAndUpdate({ _id }, product, {
-    new: true,
-  })
-    .then(() => {
-      console.log("Updated Sucessfully");
-    })
-    .catch((err) => {
-      console.log("error");
-      console.log(err);
+  if (req.files.length > 0) {
+    req.files.map(async (file) => {
+      const result = await cloudinary.uploader.upload(file.path);
+      if (result) {
+        productPictures.push({
+          avatar: result.secure_url,
+          cloudinary_id: result.public_id,
+        });
+        if (productPictures.length === req.files.length) {
+          const product = {
+            name: name,
+            slug: slugify(name),
+            price,
+            quantity,
+            description,
+            productPictures,
+            category,
+            updatedBy: req.user._id,
+            updatedByRole: req.user.role,
+          };
+          const productP = await Product.findById({ _id});
+          productP.productPictures.map(async (data) => {
+            const result = await cloudinary.uploader.destroy(data.cloudinary_id);
+          });
+          Product.findOneAndUpdate({ _id }, product, {
+            new: true,
+          })
+            .then(() => {
+              res.status(201).json({ message: "Updated Sucessfully" });
+            })
+            .catch((err) => {
+              // console.log("error");
+              console.log(err)
+              res.status(400).json({ message: "Something Went Wrong" });
+            });
+            // return res.status(201).json({ updatedProduct });
+        }
+      }
     });
-  return res.status(201).json({ updatedProduct });
+  } else {
+    const product = {
+      name,
+      slug: slugify(name),
+      price,
+      quantity,
+      description,
+      category,
+      updatedBy: req.user._id,
+      updatedByRole: req.user.role,
+    };
+    // console.log(product);
+    const updatedProduct = await Product.findOneAndUpdate({ _id }, product, {
+      new: true,
+    })
+      .then(() => {
+        res.status(201).json({ message : "Updated Sucessfully" });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(400).json({ message: "Something Went Wrong" });
+      });
+    // return res.status(201).json({ updatedProduct });
+  }
 };
 exports.addReviews = (req, res) => {
   const { rating, comment, _id } = req.body;

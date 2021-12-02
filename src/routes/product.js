@@ -24,5 +24,6 @@ router.get('/products/:slug', getProductsBySlug);
 router.post("/product/getProductsByVendor", requireSignin, adminStaffAndVendorMiddleware, getProductsByVendor);
 router.post("/product/update",upload.array('productPicture'), requireSignin, adminStaffAndVendorMiddleware, updateProduct);
 router.post("/product/add-review", requireSignin, userMiddleware, addReviews);
-router.post("/product/delete-review", requireSignin, adminMiddleware, removeProductReviews)
+router.post("/product/delete-review", requireSignin, adminMiddleware, removeProductReviews);
+router.post("/product/delete-product", requireSignin, adminStaffAndVendorMiddleware, deleteProductById);
 module.exports = router;
