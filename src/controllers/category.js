@@ -18,6 +18,7 @@ function createCategories(categories, parentId = null) {
             name: cate.name,
             slug: cate.slug,
             parentId: cate.parentId,
+            parentName: cate.parentName,
             children: createCategories(categories, cate._id)
         });
     }
@@ -34,9 +35,9 @@ exports.addCategory = (req, res) => {
     //     categoryObj.categoryImage = req.file.filename;
     // }
 
-    if (req.body.parentId != undefined) {
-        categoryObj.parentId = req.body.parentId
-        Category.findOne({_id: req.body.parentId})
+    if (req.body.parentId != undefined && req.body.parentName != undefined) {
+        categoryObj.parentId = req.body.parentId,
+        categoryObj.parentName = req.body.parentName
     }
 
     const cat = new Category(categoryObj);
@@ -61,41 +62,56 @@ exports.getCategories = (req, res) => {
 }
 
 exports.updateCategories = async (req, res) => {
-    const { _id, name, parentId, type } = req.body;
-    const updatedCategories = [];
-    if (name instanceof Array) {
-        for (let i = 0; i < name.length; i++) {
-            const category = {
-                name: name[i],
-                type: type[i],
-                slug: `${slugify(name[i])}-${shortid.generate()}`
-            };
-            if (parentId[i] !== "") {
-                category.parentId = parentId[i];
-            }
-
-            const updatedCategory = await Category.findOneAndUpdate(
-                { _id: _id[i] },
-                category,
-                { new: true }
-            );
-            updatedCategories.push(updatedCategory);
-        }
-        return res.status(201).json({ updateCategories: updatedCategories });
-    } else {
-        const category = {
-            name,
-            type,
-            slug: `${slugify(name)}-${shortid.generate()}`
-        };
-        if (parentId !== "") {
-            category.parentId = parentId;
-        }
-        const updatedCategory = await Category.findOneAndUpdate({ _id }, category, {
-            new: true,
-        });
-        return res.status(201).json({ updatedCategory });
+    const { _id, name, parentId, parentName } = req.body;
+    const category = {
+        name
     }
+    if (req.body.parentId != undefined && req.body.parentName != undefined) {
+        category.parentId = req.body.parentId,
+        category.parentName = req.body.parentName
+    }
+    const updatedCategory = await Category.findOneAndUpdate({ _id }, category, {
+        new: true,
+      }).then(() => {
+          res.status(201).json({message: "Category Updated Sucessfully"})
+      }).catch((err) =>{
+          console.log(err)
+          res.status(400).json({ message: "Something Went Wrong" });
+      })
+    // const updatedCategories = [];
+    // if (name instanceof Array) {
+    //     for (let i = 0; i < name.length; i++) {
+    //         const category = {
+    //             name: name[i],
+    //             type: type[i],
+    //             slug: `${slugify(name[i])}-${shortid.generate()}`
+    //         };
+    //         if (parentId[i] !== "") {
+    //             category.parentId = parentId[i];
+    //         }
+
+    //         const updatedCategory = await Category.findOneAndUpdate(
+    //             { _id: _id[i] },
+    //             category,
+    //             { new: true }
+    //         );
+    //         updatedCategories.push(updatedCategory);
+    //     }
+    //     return res.status(201).json({ updateCategories: updatedCategories });
+    // } else {
+    //     const category = {
+    //         name,
+    //         type,
+    //         slug: `${slugify(name)}-${shortid.generate()}`
+    //     };
+    //     if (parentId !== "") {
+    //         category.parentId = parentId;
+    //     }
+    //     const updatedCategory = await Category.findOneAndUpdate({ _id }, category, {
+    //         new: true,
+    //     });
+    //     return res.status(201).json({ updatedCategory });
+    // }
 };
 
 exports.deleteCategories = async (req, res) => {

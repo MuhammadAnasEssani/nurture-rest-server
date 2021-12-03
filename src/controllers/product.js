@@ -203,7 +203,7 @@ exports.updateProduct = async (req, res) => {
         res.status(201).json({ message : "Updated Sucessfully" });
       })
       .catch((err) => {
-        console.log(err);
+        // console.log(err);
         res.status(400).json({ message: "Something Went Wrong" });
       });
     // return res.status(201).json({ updatedProduct });
