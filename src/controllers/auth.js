@@ -8,12 +8,12 @@ exports.signup = async (req, res) => {
   User.findOne({ email: req.body.email }).exec(async (error, user) => {
     if (user)
       return res.status(422).json({
-        error: "User already registered",
+        message: "User already registered",
       });
     const { firstName, lastName, email, password, cpassword } = req.body;
     if (password != cpassword)
       return res.status(422).json({
-        error: "password and confirm password not matched",
+        message: "password and confirm password not matched",
       });
     const token = jwt.sign(
       { firstName, lastName, email, password },
@@ -39,9 +39,12 @@ exports.signup = async (req, res) => {
       })
       .then(() => {
         return res.status(201).json({
-          message: "Plz verify your Account on your email",
+          message: "Please Verify Your Account On Your Email",
         });
-      });
+      }).catch((err) => {
+        console.log(err)
+        return res.status(422).json({message: "Something Went Wrong"});
+      })
   });
 };
 
@@ -55,17 +58,18 @@ exports.signin = (req, res) => {
                 const token = jwt.sign({_id: user._id, role: user.role, email: user.email}, process.env.JWT_SECRET, { expiresIn: '1d'})
                 const { _id, firstName, lastName, email, role, fullName } = user;
                 res.status(200).json({
+                  message: "Login Sucessfully",
                     token,
                     user: { _id, firstName, lastName, email, role, fullName }
                 });
             }else{
                 return res.status(400).json({
-                    error: 'Authentication Faild'
+                    message: 'Authentication Faild'
                 })
             }
 
         }else{
-            return res.status(400).json({error: 'User is not Registered'});
+            return res.status(400).json({message: 'User is not Registered'});
         }
     });
 };
@@ -87,7 +91,6 @@ exports.activateAccount = async (req, res) => {
         username: shortid.generate(),
         status: 'verified'
       });
-      console.log(_user)
       _user.save((error, user) => {
         if (error) {
           return res.status(400).json({
@@ -97,8 +100,7 @@ exports.activateAccount = async (req, res) => {
         if (user) {
           const { _id, firstName, lastName, email, role, fullName } = user;
           return res.status(201).json({
-            token,
-            user: { _id, firstName, lastName, email, role, fullName },
+            message: "User Registered Sucessfully"
           });
         }
       });
