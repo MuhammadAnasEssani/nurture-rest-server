@@ -29,9 +29,9 @@ exports.addOrder = (req, res) => {
             // req.body.user = req.user._id;
             const order = new Order(req.body);
             order.save((error, order) => {
-                if (error) return res.status(400).json({ error });
+                if (error) return res.status(400).json({ message: "Something Went Wrong" });
                 if (order) {
-                    res.status(201).json({ order });
+                    res.status(201).json({ message: "Order Added Successfully" });
                 }
             });
         }
@@ -43,7 +43,7 @@ exports.getOrders = (req, res) => {
         .select("_id paymentStatus items")
         .populate("items.productId", "_id name productPictures")
         .exec((error, orders) => {
-            if (error) return res.status(400).json({ error });
+            if (error) return res.status(400).json({message: "Something Went Wrong" });
             if (orders) {
                 res.status(200).json({ orders });
             }
@@ -55,19 +55,11 @@ exports.getOrder = (req, res) => {
     .populate("items.productId", "_id name productPictures")
     .lean()
     .exec((error, order) => {
-      if (error) return res.status(400).json({ error });
+      if (error) return res.status(400).json({ message: "Something Went Wrong" });
       if (order) {
-        Address.findOne({
-          user: req.user._id,
-        }).exec((error, address) => {
-          if (error) return res.status(400).json({ error });
-          order.address = address.address.find(
-            (adr) => adr._id.toString() == order.addressId.toString()
-          );
           res.status(200).json({
             order,
           });
-        });
       }
     });
 };

@@ -86,16 +86,14 @@ const orderSchema = new mongoose.Schema(
       state: {
         type: String,
         required: true,
+      },
+      country: {
+        type: String,
         required: true,
       },
-      landmark: {
-        type: String,
-        min: 10,
-        max: 100,
-      },
-      alternatePhone: {
-        type: String,
-      }
+      // alternatePhone: {
+      //   type: String,
+      // }
     },
     orderStatus: [
       {
